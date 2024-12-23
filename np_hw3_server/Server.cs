@@ -4,8 +4,17 @@ using System.Text;
 
 namespace np_hw3_server
 {
-    internal class Program
+    public class Server
     {
+        static public Dictionary<string, string> Commands = new Dictionary<string, string> {
+            {"TURN_ON", "LIGTH ON" },
+            {"TURN_OFF", "LIGTH OFF"},
+            {"BRIGHTNESS_UP", "BRIGHTNESS INCREASED"}, 
+            {"BRIGHTNESS_DOWN", "BRIGHTNESS DECREASED"},
+            {"TURN_ON_ALL", "ALL DEVICES ON"}, 
+            {"TURN_OFF_ALL", "ALL DEVICES OFF"},
+            {"CHANGE_COLOR", "COLOR CHANGED"}
+        };
         static void Main(string[] args)
         {
             TcpListener server = new TcpListener(IPAddress.Any, 5000);
@@ -32,21 +41,15 @@ namespace np_hw3_server
                     {
                         string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                         Console.WriteLine($"User: {message}");
-                        if (message.ToUpper() == "TURN_ON" || message.ToUpper() == "TURN ON")
+                        if(Commands.TryGetValue(message.ToUpper(), out string value))
                         {
-                            buffer = Encoding.UTF8.GetBytes("LIGTH ON");
-                            stream.Write(buffer, 0, buffer.Length);
-                        }
-                        else if (message.ToUpper() == "TURN_OFF" || message.ToUpper() == "TURN OFF")
-                        {
-                            buffer = Encoding.UTF8.GetBytes("LIGTH OFF");
-                            stream.Write(buffer, 0, buffer.Length);
+                            buffer = Encoding.UTF8.GetBytes(value);
                         }
                         else
                         {
                             buffer = Encoding.UTF8.GetBytes("UNKNOWM COMMAND");
-                            stream.Write(buffer, 0, buffer.Length);
                         }
+                        stream.Write(buffer, 0, buffer.Length);
                     }
 
                     client.Close();
@@ -55,7 +58,11 @@ namespace np_hw3_server
                 {
                     Console.WriteLine(ex.Message);
                 }
-                
+                finally
+                {
+                    client.Close();
+                    Console.WriteLine("User disconnected...");
+                }
 
                 
             }
